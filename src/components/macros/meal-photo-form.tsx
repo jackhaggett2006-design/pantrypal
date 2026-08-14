@@ -11,7 +11,10 @@ import { Label } from "@/components/ui/label";
 import type { MealEstimate } from "@/lib/vision";
 
 export function MealPhotoForm({ onDone }: { onDone: () => void }) {
-  const [cameraOpen, setCameraOpen] = useState(false);
+  // Starts true: this tab only ever mounts once (Radix unmounts inactive
+  // tabs), so opening on that first render skips the extra tap straight
+  // to the camera instead of syncing it in after the fact via an effect.
+  const [cameraOpen, setCameraOpen] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<MealEstimate | null>(null);
@@ -65,7 +68,13 @@ export function MealPhotoForm({ onDone }: { onDone: () => void }) {
       <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-destructive/40 bg-destructive/5 px-6 py-10 text-center">
         <ImageOff className="size-8 text-destructive" />
         <p className="font-medium">{error}</p>
-        <Button variant="outline" onClick={() => setError(null)}>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setError(null);
+            setCameraOpen(true);
+          }}
+        >
           Try again
         </Button>
       </div>
@@ -129,7 +138,14 @@ export function MealPhotoForm({ onDone }: { onDone: () => void }) {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1" onClick={() => setEstimate(null)}>
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => {
+              setEstimate(null);
+              setCameraOpen(true);
+            }}
+          >
             Retake
           </Button>
           <Button className="flex-1" onClick={save} disabled={saving}>
@@ -149,10 +165,8 @@ export function MealPhotoForm({ onDone }: { onDone: () => void }) {
       >
         <Camera className="size-8 text-primary" />
         <div>
-          <p className="font-medium">Snap your plate</p>
-          <p className="text-sm text-muted-foreground">
-            Opens the camera right here — no app switching.
-          </p>
+          <p className="font-medium">Camera closed</p>
+          <p className="text-sm text-muted-foreground">Tap to reopen it.</p>
         </div>
       </button>
 

@@ -59,7 +59,10 @@ function PhotoFlow({ onDone }: { onDone: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<DraftItem[] | null>(null);
   const [saving, startSaving] = useTransition();
-  const [cameraOpen, setCameraOpen] = useState(false);
+  // Starts true: this tab only ever mounts once (Radix unmounts inactive
+  // tabs), so opening on that first render skips the extra tap straight
+  // to the camera instead of syncing it in after the fact via an effect.
+  const [cameraOpen, setCameraOpen] = useState(true);
 
   async function handleCapture(file: File) {
     setCameraOpen(false);
@@ -119,7 +122,13 @@ function PhotoFlow({ onDone }: { onDone: () => void }) {
           <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-destructive/40 bg-destructive/5 px-6 py-10 text-center">
             <ImageOff className="size-8 text-destructive" />
             <p className="font-medium">{error}</p>
-            <Button variant="outline" onClick={() => setError(null)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setError(null);
+                setCameraOpen(true);
+              }}
+            >
               Try again
             </Button>
           </div>
@@ -131,10 +140,8 @@ function PhotoFlow({ onDone }: { onDone: () => void }) {
           >
             <Camera className="size-8 text-primary" />
             <div>
-              <p className="font-medium">Snap a receipt or groceries</p>
-              <p className="text-sm text-muted-foreground">
-                Opens the camera right here — no app switching.
-              </p>
+              <p className="font-medium">Camera closed</p>
+              <p className="text-sm text-muted-foreground">Tap to reopen it.</p>
             </div>
           </button>
         ))}
@@ -188,7 +195,10 @@ function PhotoFlow({ onDone }: { onDone: () => void }) {
             <Button
               variant="outline"
               className="flex-1"
-              onClick={() => setDrafts(null)}
+              onClick={() => {
+                setDrafts(null);
+                setCameraOpen(true);
+              }}
             >
               Retake
             </Button>

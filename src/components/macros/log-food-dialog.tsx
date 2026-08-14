@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { logManual, type RecentMeal } from "@/app/app/macros/actions";
+import { logManual } from "@/app/app/macros/actions";
 import { MealPhotoForm } from "@/components/macros/meal-photo-form";
 import { RecentMealsPicker } from "@/components/macros/recent-meals-picker";
 import { Button } from "@/components/ui/button";
@@ -14,11 +14,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export function LogFoodDialog({
   open,
   onOpenChange,
-  recentMeals,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  recentMeals: RecentMeal[];
 }) {
   const close = () => onOpenChange(false);
 
@@ -28,14 +26,14 @@ export function LogFoodDialog({
         <DialogHeader>
           <DialogTitle>Log food</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue={recentMeals.length > 0 ? "meal" : "photo"}>
+        <Tabs defaultValue="meal">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="meal">Meal</TabsTrigger>
             <TabsTrigger value="photo">Photo</TabsTrigger>
             <TabsTrigger value="manual">Manual</TabsTrigger>
           </TabsList>
           <TabsContent value="meal">
-            <RecentMealsPicker meals={recentMeals} onDone={close} />
+            <RecentMealsPicker onDone={close} />
           </TabsContent>
           <TabsContent value="photo">
             <MealPhotoForm onDone={close} />

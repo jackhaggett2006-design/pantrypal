@@ -1,9 +1,7 @@
-import { getRecentMeals } from "@/app/app/macros/actions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
 import { MacroTracker } from "@/components/macros/tracker";
 import { GoalsDialog } from "@/components/macros/goals-dialog";
-import { QuickLogFab } from "@/components/macros/quick-log-fab";
 import { IntakeList } from "@/components/macros/intake-list";
 import { sumMacros, todayUtc } from "@/lib/macros";
 import type { IntakeEntry, MacroGoals } from "@/lib/types";
@@ -16,14 +14,13 @@ export default async function MacrosPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: goalsRow }, { data: intakeRows }, recentMeals] = await Promise.all([
+  const [{ data: goalsRow }, { data: intakeRows }] = await Promise.all([
     supabase.from("macro_goals").select("*").eq("user_id", user!.id).maybeSingle(),
     supabase
       .from("intake_log")
       .select("*")
       .eq("logged_on", todayUtc())
       .order("created_at", { ascending: false }),
-    getRecentMeals(),
   ]);
 
   const goals: MacroGoals = (goalsRow as MacroGoals | null) ?? {
@@ -43,7 +40,7 @@ export default async function MacrosPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6 pb-16">
+    <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <PageHeader
           title="Macros"
@@ -60,8 +57,6 @@ export default async function MacrosPage() {
         </h2>
         <IntakeList entries={entries} />
       </div>
-
-      <QuickLogFab recentMeals={recentMeals} />
     </div>
   );
 }

@@ -1,17 +1,34 @@
 "use client";
 
-import { useTransition } from "react";
-import { Repeat } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { Loader2, Repeat } from "lucide-react";
 import { toast } from "sonner";
-import { logPastMeal, type RecentMeal } from "@/app/app/macros/actions";
+import { getRecentMeals, logPastMeal, type RecentMeal } from "@/app/app/macros/actions";
 
-export function RecentMealsPicker({
-  meals,
-  onDone,
-}: {
-  meals: RecentMeal[];
-  onDone: () => void;
-}) {
+/** Self-contained: fetches its own recent-meals list on mount so this tab
+ * (and the dialog it lives in) can be dropped in anywhere — a page, the nav
+ * bar — without a server component threading the data down first. */
+export function RecentMealsPicker({ onDone }: { onDone: () => void }) {
+  const [meals, setMeals] = useState<RecentMeal[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getRecentMeals().then((m) => {
+      if (!cancelled) setMeals(m);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (meals === null) {
+    return (
+      <div className="flex items-center justify-center py-10">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   if (meals.length === 0) {
     return (
       <p className="py-6 text-center text-sm text-muted-foreground">

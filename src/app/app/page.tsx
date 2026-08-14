@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChefHat, ChevronRight, Target, TriangleAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { AddToFridge } from "@/components/fridge/add-to-fridge";
-import { MacroTracker } from "@/components/macros/tracker";
+import { MacroRings } from "@/components/home/macro-rings";
 import { getExpiryStatus, expiryLabel } from "@/lib/expiry";
 import { sumMacros, todayUtc } from "@/lib/macros";
 import type { IntakeEntry, MacroGoals, PantryItem } from "@/lib/types";
@@ -60,7 +60,7 @@ export default async function DashboardPage() {
         </h1>
       </div>
 
-      <MacroTracker goals={goals} totals={totals} />
+      <MacroRings goals={goals} totals={totals} />
 
       <div className="rounded-2xl border bg-card p-4">
         <div className="flex items-center justify-between gap-3">
