@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Camera, Loader2, Plus, Trash2 } from "lucide-react";
+import { Camera, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   analyzePhoto,
@@ -10,6 +10,7 @@ import {
   type DraftItem,
 } from "@/app/app/fridge/actions";
 import { FOOD_CATEGORIES } from "@/lib/food-icons";
+import { CameraCaptureSheet } from "@/components/fridge/camera-capture-sheet";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -57,13 +58,10 @@ function PhotoFlow({ onDone }: { onDone: () => void }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [drafts, setDrafts] = useState<DraftItem[] | null>(null);
   const [saving, startSaving] = useTransition();
+  const [cameraOpen, setCameraOpen] = useState(false);
 
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const input = e.target;
-    const file = input.files?.[0];
-    // Allow re-selecting the same file later by clearing the value.
-    input.value = "";
-    if (!file) return;
+  async function handleCapture(file: File) {
+    setCameraOpen(false);
     setAnalyzing(true);
     setDrafts(null);
     const fd = new FormData();
@@ -111,25 +109,26 @@ function PhotoFlow({ onDone }: { onDone: () => void }) {
             </p>
           </div>
         ) : (
-          <label className="relative flex cursor-pointer flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-secondary/40 px-6 py-10 text-center transition-colors hover:border-primary/50 hover:bg-accent/40">
-            {/* Transparent input overlays the whole label — the reliable way to
-                open the camera/photo picker on iOS Safari (display:none fails). */}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onFile}
-              className="absolute inset-0 cursor-pointer opacity-0"
-              aria-label="Take a photo or choose one from your library"
-            />
+          <button
+            type="button"
+            onClick={() => setCameraOpen(true)}
+            className="flex cursor-pointer flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-secondary/40 px-6 py-10 text-center transition-colors hover:border-primary/50 hover:bg-accent/40"
+          >
             <Camera className="size-8 text-primary" />
             <div>
               <p className="font-medium">Snap a receipt or groceries</p>
               <p className="text-sm text-muted-foreground">
-                Take a photo or choose one from your library.
+                Opens the camera right here — no app switching.
               </p>
             </div>
-          </label>
+          </button>
         ))}
+
+      <CameraCaptureSheet
+        open={cameraOpen}
+        onClose={() => setCameraOpen(false)}
+        onCapture={handleCapture}
+      />
 
       {drafts && (
         <div className="flex flex-col gap-3">
