@@ -17,12 +17,22 @@ export const metadata: Metadata = {
   title: "PantryPal",
   description:
     "Snap your groceries, track your macros, and cook from what you already have.",
+  // iOS ignores the web manifest for "Add to Home Screen" — these meta tags are
+  // what make it launch standalone (no browser chrome) with the right title/icon.
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "PantryPal",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: "#17181d",
   width: "device-width",
   initialScale: 1,
+  // Lets content extend under the iPhone notch/home-indicator in standalone
+  // mode; combine with env(safe-area-inset-*) padding where it matters.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

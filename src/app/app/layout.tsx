@@ -22,7 +22,7 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+      <header className="sticky top-0 z-40 border-b bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/70">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <Brand href="/app" />
           <form action={signout}>

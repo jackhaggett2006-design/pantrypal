@@ -12,10 +12,12 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except static assets and image files:
+     * Match all request paths except static assets and PWA files:
      * - _next/static, _next/image
-     * - favicon.ico, and common image extensions
+     * - favicon.ico, the web manifest, and common image extensions
+     * These must stay reachable without a session (installability checks,
+     * home-screen icon fetches happen before/without auth).
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
