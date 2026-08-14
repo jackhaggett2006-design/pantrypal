@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Camera, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -54,13 +54,15 @@ export function AddToFridge() {
 }
 
 function PhotoFlow({ onDone }: { onDone: () => void }) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [drafts, setDrafts] = useState<DraftItem[] | null>(null);
   const [saving, startSaving] = useTransition();
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+    const input = e.target;
+    const file = input.files?.[0];
+    // Allow re-selecting the same file later by clearing the value.
+    input.value = "";
     if (!file) return;
     setAnalyzing(true);
     setDrafts(null);
@@ -100,42 +102,34 @@ function PhotoFlow({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="flex flex-col gap-4 py-2">
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        hidden
-        onChange={onFile}
-      />
-
-      {!drafts && (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={analyzing}
-          className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-secondary/40 px-6 py-10 text-center transition-colors hover:border-primary/50 hover:bg-accent/40"
-        >
-          {analyzing ? (
-            <>
-              <Loader2 className="size-8 animate-spin text-primary" />
+      {!drafts &&
+        (analyzing ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-secondary/40 px-6 py-10 text-center">
+            <Loader2 className="size-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">
+              Reading your groceries…
+            </p>
+          </div>
+        ) : (
+          <label className="relative flex cursor-pointer flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-secondary/40 px-6 py-10 text-center transition-colors hover:border-primary/50 hover:bg-accent/40">
+            {/* Transparent input overlays the whole label — the reliable way to
+                open the camera/photo picker on iOS Safari (display:none fails). */}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={onFile}
+              className="absolute inset-0 cursor-pointer opacity-0"
+              aria-label="Take a photo or choose one from your library"
+            />
+            <Camera className="size-8 text-primary" />
+            <div>
+              <p className="font-medium">Snap a receipt or groceries</p>
               <p className="text-sm text-muted-foreground">
-                Reading your groceries…
+                Take a photo or choose one from your library.
               </p>
-            </>
-          ) : (
-            <>
-              <Camera className="size-8 text-primary" />
-              <div>
-                <p className="font-medium">Snap a receipt or groceries</p>
-                <p className="text-sm text-muted-foreground">
-                  We&apos;ll recognise each item automatically.
-                </p>
-              </div>
-            </>
-          )}
-        </button>
-      )}
+            </div>
+          </label>
+        ))}
 
       {drafts && (
         <div className="flex flex-col gap-3">
