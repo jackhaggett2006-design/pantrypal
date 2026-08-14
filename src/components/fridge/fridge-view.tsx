@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
@@ -51,9 +51,22 @@ export function FridgeView({ items }: { items: PantryItem[] }) {
   );
 }
 
+const TAP_REVEAL_MS = 2500;
+
 function FridgeItem({ item }: { item: PantryItem }) {
   const [pending, startTransition] = useTransition();
   const [hovered, setHovered] = useState(false);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+  }, []);
+
+  function revealBriefly() {
+    setHovered(true);
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setHovered(false), TAP_REVEAL_MS);
+  }
 
   function remove() {
     startTransition(async () => {
@@ -80,7 +93,7 @@ function FridgeItem({ item }: { item: PantryItem }) {
       transition={{ type: "spring", stiffness: 500, damping: 30 }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      onTapStart={() => setHovered((h) => !h)}
+      onTapStart={revealBriefly}
       className="group relative flex w-[4.5rem] flex-col items-center gap-1 rounded-2xl p-2.5 text-center shadow-[0_2px_0_rgba(0,0,0,0.04),0_6px_10px_-4px_rgba(74,55,40,0.25)]"
       style={{
         backgroundImage: `linear-gradient(160deg, ${tintFrom}, ${tintTo})`,

@@ -66,13 +66,18 @@ function PhotoFlow({ onDone }: { onDone: () => void }) {
     setDrafts(null);
     const fd = new FormData();
     fd.set("photo", file);
-    const result = await analyzePhoto(fd);
-    setAnalyzing(false);
-    if (!result.ok) {
-      toast.error(result.error);
-      return;
+    try {
+      const result = await analyzePhoto(fd);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      setDrafts(result.items);
+    } catch {
+      toast.error("Something went wrong reading that photo — try again.");
+    } finally {
+      setAnalyzing(false);
     }
-    setDrafts(result.items);
   }
 
   function updateName(i: number, name: string) {

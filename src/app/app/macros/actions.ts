@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { lookupNutrition } from "@/lib/usda";
 import { scaleMacros } from "@/lib/macros";
-import { parseFoodText, type ParsedFoodItem } from "@/lib/vision";
-import type { Macros } from "@/lib/types";
+import { parseFoodText, recognizeMeal, type ParsedFoodItem, type MealEstimate } from "@/lib/vision";
+import type { IntakeEntry, Macros } from "@/lib/types";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -181,6 +181,122 @@ export async function logFreeformItems(items: ParsedFoodItem[]) {
       "manual",
     );
   }
+}
+
+export type RecentMeal = {
+  food_name: string;
+  quantity: number | null;
+  unit: string | null;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  times_logged: number;
+  last_logged_at: string;
+};
+
+/** Meals the user has logged before, deduped by name and ranked by how often
+ * (then how recently) they've had it — powers the quick "meal you've had"
+ * picker so re-logging a regular is a single tap. */
+export async function getRecentMeals(): Promise<RecentMeal[]> {
+  const { supabase, user } = await requireUser();
+  const { data, error } = await supabase
+    .from("intake_log")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(300);
+  if (error || !data) return [];
+
+  const byName = new Map<string, RecentMeal>();
+  for (const row of data as IntakeEntry[]) {
+    const key = row.food_name.trim().toLowerCase();
+    const existing = byName.get(key);
+    if (existing) {
+      existing.times_logged += 1;
+      continue;
+    }
+    byName.set(key, {
+      food_name: row.food_name,
+      quantity: row.quantity,
+      unit: row.unit,
+      calories: row.calories,
+      protein_g: row.protein_g,
+      carbs_g: row.carbs_g,
+      fat_g: row.fat_g,
+      times_logged: 1,
+      last_logged_at: row.created_at,
+    });
+  }
+
+  return Array.from(byName.values())
+    .sort(
+      (a, b) =>
+        b.times_logged - a.times_logged ||
+        new Date(b.last_logged_at).getTime() - new Date(a.last_logged_at).getTime(),
+    )
+    .slice(0, 15);
+}
+
+/** Re-log a meal exactly as it was logged before — same quantity and macros. */
+export async function logPastMeal(meal: RecentMeal) {
+  const { user } = await requireUser();
+  await insertIntake(
+    user.id,
+    meal.food_name,
+    meal.quantity ?? 1,
+    meal.unit ?? "unit",
+    {
+      calories: meal.calories,
+      protein_g: meal.protein_g,
+      carbs_g: meal.carbs_g,
+      fat_g: meal.fat_g,
+    },
+    "manual",
+  );
+}
+
+/** Estimate macros for a photographed plate, without logging anything yet. */
+export async function analyzeMealPhoto(
+  formData: FormData,
+): Promise<{ ok: true; estimate: MealEstimate } | { ok: false; error: string }> {
+  await requireUser();
+  const file = formData.get("photo");
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "No photo provided." };
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    return { ok: false, error: "Photo is too large (max 10MB)." };
+  }
+
+  try {
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const estimate = await recognizeMeal(bytes.toString("base64"), file.type || "image/jpeg");
+    if (!estimate) {
+      return { ok: false, error: "Couldn't make out a meal in that photo." };
+    }
+    return { ok: true, estimate };
+  } catch {
+    return { ok: false, error: "Something went wrong reading that photo — try again." };
+  }
+}
+
+/** Log a confirmed (and possibly user-edited) photo-derived meal estimate. */
+export async function logMealEstimate(estimate: MealEstimate) {
+  const { user } = await requireUser();
+  await insertIntake(
+    user.id,
+    estimate.name || "Meal",
+    1,
+    "plate",
+    {
+      calories: estimate.calories,
+      protein_g: estimate.protein_g,
+      carbs_g: estimate.carbs_g,
+      fat_g: estimate.fat_g,
+    },
+    "manual",
+  );
 }
 
 export async function deleteIntakeEntry(id: string) {

@@ -1,51 +1,69 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Plus } from "lucide-react";
+import { useTransition } from "react";
 import { toast } from "sonner";
-import { logFromPantry, logManual } from "@/app/app/macros/actions";
+import { logFromPantry, logManual, type RecentMeal } from "@/app/app/macros/actions";
 import { DescribeFoodForm } from "@/components/macros/describe-food-form";
+import { MealPhotoForm } from "@/components/macros/meal-photo-form";
+import { RecentMealsPicker } from "@/components/macros/recent-meals-picker";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { PantryItem } from "@/lib/types";
 
-export function LogFoodDialog({ pantryItems }: { pantryItems: PantryItem[] }) {
-  const [open, setOpen] = useState(false);
+export function LogFoodDialog({
+  open,
+  onOpenChange,
+  pantryItems,
+  recentMeals,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  pantryItems: PantryItem[];
+  recentMeals: RecentMeal[];
+}) {
+  const close = () => onOpenChange(false);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="lg" className="w-full gap-2">
-          <Plus className="size-5" /> Log food
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Log food</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="describe">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="describe">Describe</TabsTrigger>
-            <TabsTrigger value="fridge">From fridge</TabsTrigger>
-            <TabsTrigger value="manual">Manual</TabsTrigger>
+        <Tabs defaultValue={recentMeals.length > 0 ? "meal" : "photo"}>
+          <TabsList className="flex w-full justify-start gap-1 overflow-x-auto">
+            <TabsTrigger value="meal" className="flex-none">
+              Meal
+            </TabsTrigger>
+            <TabsTrigger value="photo" className="flex-none">
+              Photo
+            </TabsTrigger>
+            <TabsTrigger value="describe" className="flex-none">
+              Describe
+            </TabsTrigger>
+            <TabsTrigger value="fridge" className="flex-none">
+              Fridge
+            </TabsTrigger>
+            <TabsTrigger value="manual" className="flex-none">
+              Manual
+            </TabsTrigger>
           </TabsList>
+          <TabsContent value="meal">
+            <RecentMealsPicker meals={recentMeals} onDone={close} />
+          </TabsContent>
+          <TabsContent value="photo">
+            <MealPhotoForm onDone={close} />
+          </TabsContent>
           <TabsContent value="describe">
-            <DescribeFoodForm onDone={() => setOpen(false)} />
+            <DescribeFoodForm onDone={close} />
           </TabsContent>
           <TabsContent value="fridge">
-            <FromFridgeForm pantryItems={pantryItems} onDone={() => setOpen(false)} />
+            <FromFridgeForm pantryItems={pantryItems} onDone={close} />
           </TabsContent>
           <TabsContent value="manual">
-            <ManualLogForm onDone={() => setOpen(false)} />
+            <ManualLogForm onDone={close} />
           </TabsContent>
         </Tabs>
       </DialogContent>

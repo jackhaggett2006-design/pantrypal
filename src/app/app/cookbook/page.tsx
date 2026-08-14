@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/page-header";
 import { GenerateRecipesButton } from "@/components/cookbook/generate-button";
 import { CreateRecipeDialog } from "@/components/cookbook/create-recipe-dialog";
 import { RecipeCard } from "@/components/cookbook/recipe-card";
+import { RecommendedPick } from "@/components/cookbook/recommended-pick";
 import { Card, CardContent } from "@/components/ui/card";
 import type { PantryItem, Recipe, RecipeIngredient } from "@/lib/types";
 
@@ -47,11 +48,14 @@ export default async function CookbookPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {recipes.map((r) => (
-            <RecipeCard key={r.id} recipe={r} pantryNames={pantryNames} />
-          ))}
-        </div>
+        <>
+          <RecommendedPick recipes={recipes} />
+          <div className="grid grid-cols-2 gap-x-3 gap-y-4 min-[420px]:grid-cols-3 min-[520px]:grid-cols-4">
+            {recipes.map((r) => (
+              <RecipeCard key={r.id} recipe={r} pantryNames={pantryNames} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

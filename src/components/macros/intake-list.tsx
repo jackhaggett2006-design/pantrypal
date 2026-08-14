@@ -19,17 +19,29 @@ export function IntakeList({ entries }: { entries: IntakeEntry[] }) {
     );
   }
 
+  const totalCalories = entries.reduce((sum, e) => sum + e.calories, 0);
+
   return (
-    <ul className="flex flex-col gap-2">
-      {entries.map((entry) => (
-        <IntakeRow key={entry.id} entry={entry} />
-      ))}
-    </ul>
+    <div className="overflow-hidden rounded-2xl border bg-card font-mono">
+      <ul className="divide-y divide-dashed divide-border">
+        {entries.map((entry) => (
+          <IntakeRow key={entry.id} entry={entry} />
+        ))}
+      </ul>
+      <div className="flex items-center justify-between border-t-2 border-dashed border-foreground/30 px-4 py-2.5 text-sm font-semibold">
+        <span>Total</span>
+        <span className="tabular-nums">{Math.round(totalCalories)} kcal</span>
+      </div>
+    </div>
   );
 }
 
 function IntakeRow({ entry }: { entry: IntakeEntry }) {
   const [pending, startTransition] = useTransition();
+  const time = new Date(entry.created_at).toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 
   function remove() {
     startTransition(async () => {
@@ -42,15 +54,17 @@ function IntakeRow({ entry }: { entry: IntakeEntry }) {
   }
 
   return (
-    <li className="flex items-center gap-3 rounded-xl border bg-card p-3">
+    <li
+      className="flex items-center gap-3 px-4 py-2.5 text-sm"
+      style={pending ? { opacity: 0.5 } : undefined}
+    >
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium">{entry.food_name}</p>
         <p className="text-xs text-muted-foreground">
-          {entry.quantity ?? ""}
-          {entry.unit ?? ""} &middot; {Math.round(entry.calories)} kcal &middot;{" "}
-          {entry.protein_g}g P &middot; {entry.carbs_g}g C &middot; {entry.fat_g}g F
+          {time} &middot; {entry.protein_g}P {entry.carbs_g}C {entry.fat_g}F
         </p>
       </div>
+      <span className="tabular-nums font-semibold">{Math.round(entry.calories)}</span>
       <Button
         type="button"
         variant="ghost"
@@ -58,8 +72,9 @@ function IntakeRow({ entry }: { entry: IntakeEntry }) {
         onClick={remove}
         disabled={pending}
         aria-label={`Remove ${entry.food_name}`}
+        className="size-7"
       >
-        <Trash2 className="size-4" />
+        <Trash2 className="size-3.5" />
       </Button>
     </li>
   );

@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { generateRecipeIdeas } from "@/lib/recipes";
-import type { RecipeStep } from "@/lib/types";
+import { generateRecipeIdeas, rankRecipesForNow, type RankableRecipe } from "@/lib/recipes";
+import { computeMatch } from "@/lib/recipe-match";
+import { sumMacros, todayUtc } from "@/lib/macros";
+import type { Macros, RecipeStep } from "@/lib/types";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -119,6 +121,103 @@ export async function createUserRecipe(formData: FormData) {
   }
 
   revalidatePath("/app/cookbook");
+}
+
+export type Recommendation = { recipeId: string; reason: string };
+export type RecommendResult =
+  | { ok: true; recommendation: Recommendation; rankedIds: string[] }
+  | { ok: false; error: string };
+
+const DEFAULT_GOALS = { calories: 2000, protein_g: 150, carbs_g: 200, fat_g: 65 };
+
+function timeOfDayLabel(): string {
+  const hour = new Date().getHours();
+  if (hour < 10) return "morning (breakfast time)";
+  if (hour < 15) return "midday (lunch time)";
+  if (hour < 17) return "afternoon";
+  if (hour < 21) return "evening (dinner time)";
+  return "late at night";
+}
+
+/** Ranks the user's cookbook for "what should I eat right now": remaining
+ * macro budget today, current time of day, and how often they've cooked
+ * each recipe before (a proxy for what they actually like). */
+export async function getRecommendation(): Promise<RecommendResult> {
+  const { supabase, user } = await requireUser();
+
+  const [{ data: recipeRows }, { data: pantryRows }, { data: goalsRow }, { data: intakeRows }] =
+    await Promise.all([
+      supabase.from("recipes").select("*, recipe_ingredients(*)").eq("user_id", user.id),
+      supabase.from("pantry_items").select("name").eq("user_id", user.id),
+      supabase.from("macro_goals").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase
+        .from("intake_log")
+        .select("food_name, source, calories, protein_g, carbs_g, fat_g, logged_on")
+        .eq("user_id", user.id),
+    ]);
+
+  const recipes = recipeRows ?? [];
+  if (recipes.length === 0) {
+    return { ok: false, error: "Add some recipes to your cookbook first." };
+  }
+
+  const pantryNames = (pantryRows ?? []).map((p) => p.name.toLowerCase());
+  const goals = (goalsRow as (Macros & { user_id: string }) | null) ?? {
+    ...DEFAULT_GOALS,
+    user_id: user.id,
+  };
+
+  const today = todayUtc();
+  const allIntake = intakeRows ?? [];
+  const todayTotals = sumMacros(
+    allIntake.filter((r) => r.logged_on === today).map((r) => r),
+  );
+  const remaining: Macros = {
+    calories: Math.max(0, goals.calories - todayTotals.calories),
+    protein_g: Math.max(0, goals.protein_g - todayTotals.protein_g),
+    carbs_g: Math.max(0, goals.carbs_g - todayTotals.carbs_g),
+    fat_g: Math.max(0, goals.fat_g - todayTotals.fat_g),
+  };
+
+  const cookedCount = new Map<string, number>();
+  for (const row of allIntake) {
+    if (row.source !== "recipe") continue;
+    const key = row.food_name.trim().toLowerCase();
+    cookedCount.set(key, (cookedCount.get(key) ?? 0) + 1);
+  }
+
+  const rankable: RankableRecipe[] = recipes.map((r, i) => {
+    const match = computeMatch(r.recipe_ingredients ?? [], pantryNames);
+    return {
+      index: i + 1,
+      title: r.title,
+      description: r.description,
+      macros: r.macros as Macros | null,
+      ingredientsHave: match.have,
+      ingredientsTotal: match.total,
+      timesCooked: cookedCount.get(r.title.trim().toLowerCase()) ?? 0,
+    };
+  });
+
+  const result = await rankRecipesForNow(rankable, remaining, timeOfDayLabel());
+  if (!result) {
+    return { ok: false, error: "Couldn't put together a recommendation — try again." };
+  }
+
+  const idByIndex = new Map(rankable.map((r) => [r.index, recipes[r.index - 1].id as string]));
+  const rankedIds = result.rankedIndices
+    .map((i) => idByIndex.get(i))
+    .filter((id): id is string => Boolean(id));
+
+  if (rankedIds.length === 0) {
+    return { ok: false, error: "Couldn't put together a recommendation — try again." };
+  }
+
+  return {
+    ok: true,
+    recommendation: { recipeId: rankedIds[0], reason: result.reason },
+    rankedIds,
+  };
 }
 
 export async function deleteRecipe(id: string) {

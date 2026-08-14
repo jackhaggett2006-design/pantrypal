@@ -72,31 +72,34 @@ export async function recognizeFoods(
 ): Promise<RecognizedItem[]> {
   const media = MEDIA_TYPES.has(mediaType) ? mediaType : "image/jpeg";
 
-  const response = await getClient().messages.create({
-    model: "claude-sonnet-5",
-    max_tokens: 4096,
-    thinking: { type: "disabled" },
-    output_config: { format: { type: "json_schema", schema: foodSchema } },
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "image",
-            source: {
-              type: "base64",
-              media_type: media as "image/jpeg",
-              data: base64,
+  const response = await getClient().messages.create(
+    {
+      model: "claude-sonnet-5",
+      max_tokens: 4096,
+      thinking: { type: "disabled" },
+      output_config: { format: { type: "json_schema", schema: foodSchema } },
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: media as "image/jpeg",
+                data: base64,
+              },
             },
-          },
-          {
-            type: "text",
-            text: "This is a photo of a grocery receipt or groceries on a surface. List every distinct food or drink item you can identify. Ignore non-food items, totals, store names, and prices. For each item give a concise name, a fitting single food emoji, a quantity (default 1), a unit (default 'unit'), and a category.",
-          },
-        ],
-      },
-    ],
-  });
+            {
+              type: "text",
+              text: "This is a photo of a grocery receipt or groceries on a surface. List every distinct food or drink item you can identify. Ignore non-food items, totals, store names, and prices. For each item give a concise name, a fitting single food emoji, a quantity (default 1), a unit (default 'unit'), and a category.",
+            },
+          ],
+        },
+      ],
+    },
+    { timeout: 30_000 },
+  );
 
   const text = response.content.find((b) => b.type === "text");
   if (!text || text.type !== "text") return [];
@@ -149,18 +152,21 @@ export type ParsedFoodItem = { name: string; grams: number };
  * into distinct, USDA-searchable food items with an estimated gram weight
  * each — the text-input sibling of `recognizeFoods` above. */
 export async function parseFoodText(description: string): Promise<ParsedFoodItem[]> {
-  const response = await getClient().messages.create({
-    model: "claude-sonnet-5",
-    max_tokens: 1024,
-    thinking: { type: "disabled" },
-    output_config: { format: { type: "json_schema", schema: foodTextSchema } },
-    messages: [
-      {
-        role: "user",
-        content: `Break this food diary entry into distinct food items with an estimated weight in grams each: "${description}"`,
-      },
-    ],
-  });
+  const response = await getClient().messages.create(
+    {
+      model: "claude-sonnet-5",
+      max_tokens: 1024,
+      thinking: { type: "disabled" },
+      output_config: { format: { type: "json_schema", schema: foodTextSchema } },
+      messages: [
+        {
+          role: "user",
+          content: `Break this food diary entry into distinct food items with an estimated weight in grams each: "${description}"`,
+        },
+      ],
+    },
+    { timeout: 20_000 },
+  );
 
   const text = response.content.find((b) => b.type === "text");
   if (!text || text.type !== "text") return [];
@@ -170,5 +176,71 @@ export async function parseFoodText(description: string): Promise<ParsedFoodItem
     return (parsed.items ?? []).filter((it) => it.name && it.grams > 0);
   } catch {
     return [];
+  }
+}
+
+const mealPhotoSchema = {
+  type: "object",
+  properties: {
+    name: { type: "string", description: "Short name for the plate, e.g. 'Grilled chicken with rice'" },
+    calories: { type: "number" },
+    protein_g: { type: "number" },
+    carbs_g: { type: "number" },
+    fat_g: { type: "number" },
+  },
+  required: ["name", "calories", "protein_g", "carbs_g", "fat_g"],
+  additionalProperties: false,
+} as const;
+
+export type MealEstimate = {
+  name: string;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+};
+
+/** Estimates macros for a whole plated meal directly from a photo — unlike
+ * `recognizeFoods` (which lists raw ingredients for the pantry), this reasons
+ * about a cooked dish holistically since there's no per-ingredient USDA
+ * lookup that fits "half a plate of pasta with sauce". */
+export async function recognizeMeal(
+  base64: string,
+  mediaType: string,
+): Promise<MealEstimate | null> {
+  const media = MEDIA_TYPES.has(mediaType) ? mediaType : "image/jpeg";
+
+  const response = await getClient().messages.create(
+    {
+      model: "claude-sonnet-5",
+      max_tokens: 1024,
+      thinking: { type: "disabled" },
+      output_config: { format: { type: "json_schema", schema: mealPhotoSchema } },
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: { type: "base64", media_type: media as "image/jpeg", data: base64 },
+            },
+            {
+              type: "text",
+              text: "This is a photo of a plated meal. Estimate the calories, protein, carbs, and fat for the whole portion shown, and give the dish a short name.",
+            },
+          ],
+        },
+      ],
+    },
+    { timeout: 30_000 },
+  );
+
+  const text = response.content.find((b) => b.type === "text");
+  if (!text || text.type !== "text") return null;
+
+  try {
+    return JSON.parse(text.text) as MealEstimate;
+  } catch {
+    return null;
   }
 }

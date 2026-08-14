@@ -1,8 +1,9 @@
+import { getRecentMeals } from "@/app/app/macros/actions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
 import { MacroTracker } from "@/components/macros/tracker";
 import { GoalsDialog } from "@/components/macros/goals-dialog";
-import { LogFoodDialog } from "@/components/macros/log-food-dialog";
+import { QuickLogFab } from "@/components/macros/quick-log-fab";
 import { IntakeList } from "@/components/macros/intake-list";
 import { sumMacros, todayUtc } from "@/lib/macros";
 import type { IntakeEntry, MacroGoals, PantryItem } from "@/lib/types";
@@ -15,7 +16,7 @@ export default async function MacrosPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: goalsRow }, { data: intakeRows }, { data: pantryRows }] =
+  const [{ data: goalsRow }, { data: intakeRows }, { data: pantryRows }, recentMeals] =
     await Promise.all([
       supabase.from("macro_goals").select("*").eq("user_id", user!.id).maybeSingle(),
       supabase
@@ -27,6 +28,7 @@ export default async function MacrosPage() {
         .from("pantry_items")
         .select("*")
         .order("added_at", { ascending: false }),
+      getRecentMeals(),
     ]);
 
   const goals: MacroGoals = (goalsRow as MacroGoals | null) ?? {
@@ -47,7 +49,7 @@ export default async function MacrosPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 pb-16">
       <div className="flex items-start justify-between gap-4">
         <PageHeader
           title="Macros"
@@ -58,14 +60,14 @@ export default async function MacrosPage() {
 
       <MacroTracker goals={goals} totals={totals} />
 
-      <LogFoodDialog pantryItems={pantryItems} />
-
       <div className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-muted-foreground">
           Logged today
         </h2>
         <IntakeList entries={entries} />
       </div>
+
+      <QuickLogFab pantryItems={pantryItems} recentMeals={recentMeals} />
     </div>
   );
 }
