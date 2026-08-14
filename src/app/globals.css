@@ -49,29 +49,30 @@
 }
 
 :root {
-  /* Clean cool-white background with an ember-orange identity */
-  --background: oklch(0.985 0.002 250);
-  --foreground: oklch(0.2 0.012 260);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.012 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.012 260);
-  --primary: oklch(0.64 0.19 45);
-  --primary-foreground: oklch(0.99 0.005 60);
-  --secondary: oklch(0.955 0.004 250);
-  --secondary-foreground: oklch(0.28 0.012 260);
-  --muted: oklch(0.955 0.004 250);
-  --muted-foreground: oklch(0.5 0.01 260);
-  --accent: oklch(0.95 0.03 55);
-  --accent-foreground: oklch(0.36 0.09 45);
+  /* Warm cookbook palette: cream paper + walnut brown identity */
+  --background: oklch(0.97 0.012 75);
+  --foreground: oklch(0.24 0.02 45);
+  --card: oklch(0.995 0.006 80);
+  --card-foreground: oklch(0.24 0.02 45);
+  --popover: oklch(0.995 0.006 80);
+  --popover-foreground: oklch(0.24 0.02 45);
+  --primary: oklch(0.33 0.045 50);
+  --primary-foreground: oklch(0.98 0.01 80);
+  --secondary: oklch(0.93 0.014 70);
+  --secondary-foreground: oklch(0.3 0.02 45);
+  --muted: oklch(0.93 0.014 70);
+  --muted-foreground: oklch(0.52 0.016 55);
+  --accent: oklch(0.91 0.035 55);
+  --accent-foreground: oklch(0.34 0.06 45);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.9 0.005 250);
-  --input: oklch(0.9 0.005 250);
-  --ring: oklch(0.64 0.19 45);
+  --border: oklch(0.89 0.012 65);
+  --input: oklch(0.89 0.012 65);
+  --ring: oklch(0.33 0.045 50);
   /* Macro palette: calories, protein, carbs, fat — validated categorical set
      (dataviz skill: passes lightness/chroma/CVD/contrast checks, adjacent
      pairlist, against this app's surfaces). Assigned in this fixed order;
-     each meter is always direct-labeled, never color-alone. */
+     each meter is always direct-labeled, never color-alone. Kept distinct
+     from the low-chroma brand primary so brand and data never collide. */
   --chart-1: #2a78d6; /* calories */
   --chart-2: #eb6834; /* protein */
   --chart-3: #1baf7a; /* carbs */
@@ -79,50 +80,50 @@
   --chart-5: oklch(0.7 0.13 20);
   --status-warning: #fab219;
   --radius: 0.8rem;
-  --sidebar: oklch(0.975 0.003 250);
-  --sidebar-foreground: oklch(0.2 0.012 260);
-  --sidebar-primary: oklch(0.64 0.19 45);
-  --sidebar-primary-foreground: oklch(0.99 0.005 60);
-  --sidebar-accent: oklch(0.95 0.03 55);
-  --sidebar-accent-foreground: oklch(0.36 0.09 45);
-  --sidebar-border: oklch(0.9 0.005 250);
-  --sidebar-ring: oklch(0.64 0.19 45);
+  --sidebar: oklch(0.955 0.014 72);
+  --sidebar-foreground: oklch(0.24 0.02 45);
+  --sidebar-primary: oklch(0.33 0.045 50);
+  --sidebar-primary-foreground: oklch(0.98 0.01 80);
+  --sidebar-accent: oklch(0.91 0.035 55);
+  --sidebar-accent-foreground: oklch(0.34 0.06 45);
+  --sidebar-border: oklch(0.89 0.012 65);
+  --sidebar-ring: oklch(0.33 0.045 50);
 }
 
 .dark {
-  /* Charcoal night mode with ember accent */
-  --background: oklch(0.18 0.008 260);
-  --foreground: oklch(0.96 0.004 250);
-  --card: oklch(0.22 0.009 260);
-  --card-foreground: oklch(0.96 0.004 250);
-  --popover: oklch(0.22 0.009 260);
-  --popover-foreground: oklch(0.96 0.004 250);
-  --primary: oklch(0.7 0.19 48);
-  --primary-foreground: oklch(0.16 0.01 260);
-  --secondary: oklch(0.28 0.01 260);
-  --secondary-foreground: oklch(0.96 0.004 250);
-  --muted: oklch(0.28 0.01 260);
-  --muted-foreground: oklch(0.72 0.01 260);
-  --accent: oklch(0.32 0.05 45);
-  --accent-foreground: oklch(0.96 0.004 250);
+  /* Espresso night mode: warm charcoal-brown with a caramel accent */
+  --background: oklch(0.2 0.016 50);
+  --foreground: oklch(0.95 0.01 75);
+  --card: oklch(0.25 0.018 50);
+  --card-foreground: oklch(0.95 0.01 75);
+  --popover: oklch(0.25 0.018 50);
+  --popover-foreground: oklch(0.95 0.01 75);
+  --primary: oklch(0.72 0.07 60);
+  --primary-foreground: oklch(0.18 0.02 50);
+  --secondary: oklch(0.3 0.018 50);
+  --secondary-foreground: oklch(0.95 0.01 75);
+  --muted: oklch(0.3 0.018 50);
+  --muted-foreground: oklch(0.7 0.014 60);
+  --accent: oklch(0.35 0.05 55);
+  --accent-foreground: oklch(0.95 0.01 75);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.7 0.19 48);
+  --ring: oklch(0.72 0.07 60);
   --chart-1: #3987e5; /* calories */
   --chart-2: #d95926; /* protein */
   --chart-3: #199e70; /* carbs */
   --chart-4: #c98500; /* fat */
   --chart-5: oklch(0.74 0.13 20);
   --status-warning: #fab219;
-  --sidebar: oklch(0.2 0.009 260);
-  --sidebar-foreground: oklch(0.96 0.004 250);
-  --sidebar-primary: oklch(0.7 0.19 48);
-  --sidebar-primary-foreground: oklch(0.16 0.01 260);
-  --sidebar-accent: oklch(0.32 0.05 45);
-  --sidebar-accent-foreground: oklch(0.96 0.004 250);
+  --sidebar: oklch(0.23 0.017 50);
+  --sidebar-foreground: oklch(0.95 0.01 75);
+  --sidebar-primary: oklch(0.72 0.07 60);
+  --sidebar-primary-foreground: oklch(0.18 0.02 50);
+  --sidebar-accent: oklch(0.35 0.05 55);
+  --sidebar-accent-foreground: oklch(0.95 0.01 75);
   --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.7 0.19 48);
+  --sidebar-ring: oklch(0.72 0.07 60);
 }
 
 @layer base {

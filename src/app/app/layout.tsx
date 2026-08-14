@@ -20,6 +20,16 @@ export default async function AppLayout({
     redirect("/login");
   }
 
+  const { data: goals } = await supabase
+    .from("macro_goals")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!goals) {
+    redirect("/onboarding");
+  }
+
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-40 border-b bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/70">

@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 import { deletePantryItem } from "@/app/app/fridge/actions";
 import { expiryLabel, getExpiryStatus } from "@/lib/expiry";
+import { CATEGORY_TINT } from "@/lib/food-icons";
 import type { PantryItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -24,24 +25,24 @@ export function FridgeView({ items }: { items: PantryItem[] }) {
 
   return (
     <div className="mx-auto w-full max-w-md">
-      <div className="relative rounded-[2rem] border border-border bg-gradient-to-b from-secondary to-muted p-3 shadow-sm">
+      <div className="relative rounded-[2rem] border border-primary/15 bg-gradient-to-b from-card to-secondary p-3 shadow-md">
         {/* door handle */}
-        <div className="absolute -right-1 top-1/2 h-24 w-2 -translate-y-1/2 rounded-full bg-border" />
-        <div className="flex flex-col gap-3 rounded-[1.4rem] bg-background/60 p-3">
+        <div className="absolute -right-1 top-1/2 h-24 w-2 -translate-y-1/2 rounded-full bg-primary/70" />
+        <div className="flex flex-col gap-3 rounded-[1.4rem] bg-background/70 p-3">
           {shelves.map((shelf, i) => (
             <div
               key={i}
-              className="min-h-24 rounded-xl border border-border/60 bg-gradient-to-b from-background to-secondary/40 p-2"
+              className="min-h-24 rounded-xl border border-primary/10 bg-gradient-to-b from-card to-secondary/60 p-2.5"
             >
-              <div className="flex flex-wrap items-start gap-2">
+              <div className="flex flex-wrap items-start gap-2.5">
                 <AnimatePresence mode="popLayout">
                   {shelf.map((item) => (
                     <FridgeItem key={item.id} item={item} />
                   ))}
                 </AnimatePresence>
               </div>
-              {/* shelf lip */}
-              <div className="mt-2 h-1 rounded-full bg-border/70" />
+              {/* shelf lip: a little glass-shelf glint under the items */}
+              <div className="mt-2.5 h-1 rounded-full bg-gradient-to-r from-primary/5 via-primary/25 to-primary/5" />
             </div>
           ))}
         </div>
@@ -68,6 +69,7 @@ function FridgeItem({ item }: { item: PantryItem }) {
   const expiryStatus = getExpiryStatus(item.expires_at);
   const label = item.expires_at ? expiryLabel(item.expires_at) : null;
   const title = label ? `${item.name} — ${label}` : item.name;
+  const [tintFrom, tintTo] = CATEGORY_TINT[item.category ?? "other"];
 
   return (
     <motion.div
@@ -79,7 +81,10 @@ function FridgeItem({ item }: { item: PantryItem }) {
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       onTapStart={() => setHovered((h) => !h)}
-      className="group relative flex w-16 flex-col items-center gap-1 rounded-xl bg-card p-2 text-center shadow-sm"
+      className="group relative flex w-[4.5rem] flex-col items-center gap-1 rounded-2xl p-2.5 text-center shadow-[0_2px_0_rgba(0,0,0,0.04),0_6px_10px_-4px_rgba(74,55,40,0.25)]"
+      style={{
+        backgroundImage: `linear-gradient(160deg, ${tintFrom}, ${tintTo})`,
+      }}
       title={title}
     >
       <button
@@ -93,25 +98,27 @@ function FridgeItem({ item }: { item: PantryItem }) {
       >
         <X className="size-3" />
       </button>
-      <span className="text-3xl leading-none" aria-hidden>
+      <span className="text-4xl leading-none drop-shadow-sm" aria-hidden>
         {item.icon_key ?? "🍽️"}
       </span>
-      <span className="line-clamp-2 text-[11px] font-medium leading-tight text-foreground">
+      <span className="line-clamp-2 text-[11px] font-semibold leading-tight text-[#3a2e22]">
         {item.name}
       </span>
       {expiryStatus && label && (
         <span
-          className="text-[9px] font-semibold leading-none"
+          className="rounded-full bg-black/10 px-1.5 py-0.5 text-[9px] font-semibold leading-none text-[#3a2e22]"
           style={{
-            color:
-              expiryStatus === "expired"
-                ? "var(--destructive)"
-                : "var(--status-warning)",
+            color: expiryStatus === "expired" ? "var(--destructive)" : undefined,
           }}
         >
           {label}
         </span>
       )}
+      {/* grounding shadow: settles the item onto the glass shelf */}
+      <span
+        aria-hidden
+        className="absolute -bottom-1.5 left-1/2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-black/15 blur-[3px]"
+      />
     </motion.div>
   );
 }

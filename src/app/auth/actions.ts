@@ -72,7 +72,7 @@ export async function signup(
 
   if (session) {
     revalidatePath("/", "layout");
-    redirect("/app");
+    redirect("/onboarding");
   }
 
   redirect("/login?checkEmail=1");

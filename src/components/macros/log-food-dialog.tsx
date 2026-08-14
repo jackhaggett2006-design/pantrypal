@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { logFromPantry, logManual } from "@/app/app/macros/actions";
+import { DescribeFoodForm } from "@/components/macros/describe-food-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,11 +32,15 @@ export function LogFoodDialog({ pantryItems }: { pantryItems: PantryItem[] }) {
         <DialogHeader>
           <DialogTitle>Log food</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue={pantryItems.length ? "fridge" : "manual"}>
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="describe">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="describe">Describe</TabsTrigger>
             <TabsTrigger value="fridge">From fridge</TabsTrigger>
             <TabsTrigger value="manual">Manual</TabsTrigger>
           </TabsList>
+          <TabsContent value="describe">
+            <DescribeFoodForm onDone={() => setOpen(false)} />
+          </TabsContent>
           <TabsContent value="fridge">
             <FromFridgeForm pantryItems={pantryItems} onDone={() => setOpen(false)} />
           </TabsContent>

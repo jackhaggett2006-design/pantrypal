@@ -27,3 +27,58 @@ export function sumMacros(entries: Macros[]): Macros {
 export function todayUtc(): string {
   return new Date().toISOString().slice(0, 10);
 }
+
+export type ActivityLevel =
+  | "sedentary"
+  | "light"
+  | "moderate"
+  | "active"
+  | "very_active";
+export type GoalDirection = "lose" | "maintain" | "gain";
+
+const ACTIVITY_MULTIPLIER: Record<ActivityLevel, number> = {
+  sedentary: 1.2,
+  light: 1.375,
+  moderate: 1.55,
+  active: 1.725,
+  very_active: 1.9,
+};
+
+const GOAL_ADJUSTMENT_KCAL: Record<GoalDirection, number> = {
+  lose: -500,
+  maintain: 0,
+  gain: 300,
+};
+
+/**
+ * Estimate a daily calorie + macro target from basic biometrics, for
+ * onboarding's "help me estimate" path. Mifflin-St Jeor for BMR, scaled by
+ * activity level, then a balanced 30/40/30 protein/carb/fat split — a
+ * reasonable starting point the user can always edit before saving.
+ */
+export function estimateGoals(input: {
+  sex: "male" | "female";
+  age: number;
+  heightCm: number;
+  weightKg: number;
+  activity: ActivityLevel;
+  goal: GoalDirection;
+}): Macros {
+  const { sex, age, heightCm, weightKg, activity, goal } = input;
+  const bmr =
+    sex === "male"
+      ? 10 * weightKg + 6.25 * heightCm - 5 * age + 5
+      : 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+  const tdee = bmr * ACTIVITY_MULTIPLIER[activity];
+  const calories = Math.max(
+    1200,
+    Math.round((tdee + GOAL_ADJUSTMENT_KCAL[goal]) / 10) * 10,
+  );
+
+  return {
+    calories,
+    protein_g: Math.round((calories * 0.3) / 4),
+    carbs_g: Math.round((calories * 0.4) / 4),
+    fat_g: Math.round((calories * 0.3) / 9),
+  };
+}

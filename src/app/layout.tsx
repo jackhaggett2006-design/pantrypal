@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#17181d",
+  themeColor: "#F7F1E7",
   width: "device-width",
   initialScale: 1,
   // Lets content extend under the iPhone notch/home-indicator in standalone

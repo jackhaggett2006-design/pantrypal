@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "Snap your groceries, track your macros, and cook from what you already have.",
     start_url: "/app",
     display: "standalone",
-    background_color: "#17181d",
-    theme_color: "#17181d",
+    background_color: "#F7F1E7",
+    theme_color: "#4A3728",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
