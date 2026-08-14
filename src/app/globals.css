@@ -68,12 +68,16 @@
   --border: oklch(0.9 0.005 250);
   --input: oklch(0.9 0.005 250);
   --ring: oklch(0.64 0.19 45);
-  /* Macro palette: calories (ember), protein (green), carbs (blue), fat (violet) */
-  --chart-1: oklch(0.66 0.19 45);
-  --chart-2: oklch(0.62 0.14 155);
-  --chart-3: oklch(0.6 0.12 240);
-  --chart-4: oklch(0.62 0.15 300);
+  /* Macro palette: calories, protein, carbs, fat — validated categorical set
+     (dataviz skill: passes lightness/chroma/CVD/contrast checks, adjacent
+     pairlist, against this app's surfaces). Assigned in this fixed order;
+     each meter is always direct-labeled, never color-alone. */
+  --chart-1: #2a78d6; /* calories */
+  --chart-2: #eb6834; /* protein */
+  --chart-3: #1baf7a; /* carbs */
+  --chart-4: #eda100; /* fat */
   --chart-5: oklch(0.7 0.13 20);
+  --status-warning: #fab219;
   --radius: 0.8rem;
   --sidebar: oklch(0.975 0.003 250);
   --sidebar-foreground: oklch(0.2 0.012 260);
@@ -105,11 +109,12 @@
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
   --ring: oklch(0.7 0.19 48);
-  --chart-1: oklch(0.72 0.19 48);
-  --chart-2: oklch(0.7 0.14 155);
-  --chart-3: oklch(0.68 0.12 240);
-  --chart-4: oklch(0.7 0.15 300);
+  --chart-1: #3987e5; /* calories */
+  --chart-2: #d95926; /* protein */
+  --chart-3: #199e70; /* carbs */
+  --chart-4: #c98500; /* fat */
   --chart-5: oklch(0.74 0.13 20);
+  --status-warning: #fab219;
   --sidebar: oklch(0.2 0.009 260);
   --sidebar-foreground: oklch(0.96 0.004 250);
   --sidebar-primary: oklch(0.7 0.19 48);
