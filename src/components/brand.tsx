@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Brand({
@@ -18,9 +19,9 @@ export function Brand({
     >
       <span
         aria-hidden
-        className="grid size-8 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm"
+        className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm"
       >
-        🥗
+        <Flame className="size-5" strokeWidth={2.4} />
       </span>
       <span>PantryPal</span>
     </Link>
