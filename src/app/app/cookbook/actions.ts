@@ -31,7 +31,7 @@ export async function generateRecipes(): Promise<GenerateResult> {
 
     const pantry = pantryRows ?? [];
     if (pantry.length === 0) {
-      return { ok: false, error: "Add some items to your fridge first." };
+      return { ok: false, error: "Add some items to your pantry first." };
     }
 
     const ideas = await generateRecipeIdeas(pantry);

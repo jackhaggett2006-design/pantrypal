@@ -6,7 +6,7 @@ import { GoalsDialog } from "@/components/macros/goals-dialog";
 import { QuickLogFab } from "@/components/macros/quick-log-fab";
 import { IntakeList } from "@/components/macros/intake-list";
 import { sumMacros, todayUtc } from "@/lib/macros";
-import type { IntakeEntry, MacroGoals, PantryItem } from "@/lib/types";
+import type { IntakeEntry, MacroGoals } from "@/lib/types";
 
 const DEFAULT_GOALS = { calories: 2000, protein_g: 150, carbs_g: 200, fat_g: 65 };
 
@@ -16,20 +16,15 @@ export default async function MacrosPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: goalsRow }, { data: intakeRows }, { data: pantryRows }, recentMeals] =
-    await Promise.all([
-      supabase.from("macro_goals").select("*").eq("user_id", user!.id).maybeSingle(),
-      supabase
-        .from("intake_log")
-        .select("*")
-        .eq("logged_on", todayUtc())
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("pantry_items")
-        .select("*")
-        .order("added_at", { ascending: false }),
-      getRecentMeals(),
-    ]);
+  const [{ data: goalsRow }, { data: intakeRows }, recentMeals] = await Promise.all([
+    supabase.from("macro_goals").select("*").eq("user_id", user!.id).maybeSingle(),
+    supabase
+      .from("intake_log")
+      .select("*")
+      .eq("logged_on", todayUtc())
+      .order("created_at", { ascending: false }),
+    getRecentMeals(),
+  ]);
 
   const goals: MacroGoals = (goalsRow as MacroGoals | null) ?? {
     user_id: user!.id,
@@ -37,7 +32,6 @@ export default async function MacrosPage() {
     updated_at: new Date().toISOString(),
   };
   const entries = (intakeRows ?? []) as IntakeEntry[];
-  const pantryItems = (pantryRows ?? []) as PantryItem[];
 
   const totals = sumMacros(
     entries.map((e) => ({
@@ -67,7 +61,7 @@ export default async function MacrosPage() {
         <IntakeList entries={entries} />
       </div>
 
-      <QuickLogFab pantryItems={pantryItems} recentMeals={recentMeals} />
+      <QuickLogFab recentMeals={recentMeals} />
     </div>
   );
 }

@@ -29,7 +29,7 @@ export default async function CookbookPage() {
       <div className="flex items-start justify-between gap-4">
         <PageHeader
           title="Cookbook"
-          subtitle="Recipes you can actually make with what's in your fridge."
+          subtitle="Recipes you can actually make with what's in your pantry."
         />
         <CreateRecipeDialog />
       </div>
@@ -43,7 +43,7 @@ export default async function CookbookPage() {
             <p className="font-medium">No recipes yet</p>
             <p className="max-w-xs text-sm text-muted-foreground">
               Tap <span className="font-medium">What can I make?</span> to
-              generate recipes from your fridge, or write your own.
+              generate recipes from your pantry, or write your own.
             </p>
           </CardContent>
         </Card>

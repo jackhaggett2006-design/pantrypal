@@ -30,7 +30,7 @@ export function GenerateRecipesButton({
       className="w-full gap-2"
       onClick={run}
       disabled={pending || !hasPantryItems}
-      title={hasPantryItems ? undefined : "Add items to your fridge first"}
+      title={hasPantryItems ? undefined : "Add items to your pantry first"}
     >
       {pending ? (
         <>

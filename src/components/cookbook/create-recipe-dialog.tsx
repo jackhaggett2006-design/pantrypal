@@ -68,7 +68,7 @@ export function CreateRecipeDialog() {
               name="ingredients"
               rows={4}
               placeholder={"2 eggs\n2 cups cooked rice\n1 tbsp soy sauce"}
-              className="rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm"
+              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm md:text-sm"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -78,7 +78,7 @@ export function CreateRecipeDialog() {
               name="steps"
               rows={5}
               placeholder={"Whisk the eggs\nHeat oil in a wok over high heat\nScramble the eggs, then set aside"}
-              className="rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm"
+              className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm md:text-sm"
               required
             />
           </div>

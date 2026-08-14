@@ -18,7 +18,7 @@ export default async function FridgePage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <PageHeader
-          title="My Fridge"
+          title="My Pantry"
           subtitle={
             items.length
               ? `${items.length} item${items.length !== 1 ? "s" : ""} in stock`
@@ -32,7 +32,7 @@ export default async function FridgePage() {
         <Card>
           <CardContent className="grid place-items-center gap-2 py-16 text-center">
             <span className="text-4xl">🧊</span>
-            <p className="font-medium">Your fridge is empty</p>
+            <p className="font-medium">Your pantry is empty</p>
             <p className="max-w-xs text-sm text-muted-foreground">
               Tap <span className="font-medium">Add food</span> and snap a photo
               of your groceries — items will appear on the shelves.

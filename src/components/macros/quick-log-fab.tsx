@@ -4,15 +4,8 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { LogFoodDialog } from "@/components/macros/log-food-dialog";
 import type { RecentMeal } from "@/app/app/macros/actions";
-import type { PantryItem } from "@/lib/types";
 
-export function QuickLogFab({
-  pantryItems,
-  recentMeals,
-}: {
-  pantryItems: PantryItem[];
-  recentMeals: RecentMeal[];
-}) {
+export function QuickLogFab({ recentMeals }: { recentMeals: RecentMeal[] }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -27,12 +20,7 @@ export function QuickLogFab({
           <Plus className="size-6" strokeWidth={2.4} />
         </button>
       </div>
-      <LogFoodDialog
-        open={open}
-        onOpenChange={setOpen}
-        pantryItems={pantryItems}
-        recentMeals={recentMeals}
-      />
+      <LogFoodDialog open={open} onOpenChange={setOpen} recentMeals={recentMeals} />
     </>
   );
 }

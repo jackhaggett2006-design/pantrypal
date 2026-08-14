@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Camera, Loader2, Trash2 } from "lucide-react";
+import { Camera, ImageOff, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   analyzePhoto,
   savePantryItems,
   addManualItem,
   type DraftItem,
-} from "@/app/app/fridge/actions";
+} from "@/app/app/pantry/actions";
 import { FOOD_CATEGORIES } from "@/lib/food-icons";
 import { CameraCaptureSheet } from "@/components/fridge/camera-capture-sheet";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export function AddToFridge() {
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add to your fridge</DialogTitle>
+          <DialogTitle>Add to your pantry</DialogTitle>
         </DialogHeader>
         <Tabs defaultValue="photo">
           <TabsList className="grid w-full grid-cols-2">
@@ -56,6 +56,7 @@ export function AddToFridge() {
 
 function PhotoFlow({ onDone }: { onDone: () => void }) {
   const [analyzing, setAnalyzing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<DraftItem[] | null>(null);
   const [saving, startSaving] = useTransition();
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -63,18 +64,19 @@ function PhotoFlow({ onDone }: { onDone: () => void }) {
   async function handleCapture(file: File) {
     setCameraOpen(false);
     setAnalyzing(true);
+    setError(null);
     setDrafts(null);
     const fd = new FormData();
     fd.set("photo", file);
     try {
       const result = await analyzePhoto(fd);
       if (!result.ok) {
-        toast.error(result.error);
+        setError(result.error);
         return;
       }
       setDrafts(result.items);
     } catch {
-      toast.error("Something went wrong reading that photo — try again.");
+      setError("Something went wrong reading that photo — try again.");
     } finally {
       setAnalyzing(false);
     }
@@ -112,6 +114,14 @@ function PhotoFlow({ onDone }: { onDone: () => void }) {
             <p className="text-sm text-muted-foreground">
               Reading your groceries…
             </p>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-destructive/40 bg-destructive/5 px-6 py-10 text-center">
+            <ImageOff className="size-8 text-destructive" />
+            <p className="font-medium">{error}</p>
+            <Button variant="outline" onClick={() => setError(null)}>
+              Try again
+            </Button>
           </div>
         ) : (
           <button
@@ -183,7 +193,7 @@ function PhotoFlow({ onDone }: { onDone: () => void }) {
               Retake
             </Button>
             <Button className="flex-1" onClick={save} disabled={saving}>
-              {saving ? "Adding…" : "Add to fridge"}
+              {saving ? "Adding…" : "Add to pantry"}
             </Button>
           </div>
         </div>
@@ -199,7 +209,7 @@ function ManualForm({ onDone }: { onDone: () => void }) {
     startSaving(async () => {
       try {
         await addManualItem(formData);
-        toast.success("Added to fridge");
+        toast.success("Added to pantry");
         onDone();
       } catch {
         toast.error("Couldn't add that item");
@@ -235,7 +245,7 @@ function ManualForm({ onDone }: { onDone: () => void }) {
           id="category"
           name="category"
           defaultValue="other"
-          className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+          className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-base shadow-sm md:text-sm"
         >
           {FOOD_CATEGORIES.map((c) => (
             <option key={c} value={c}>
@@ -249,7 +259,7 @@ function ManualForm({ onDone }: { onDone: () => void }) {
         <Input id="expires_at" name="expires_at" type="date" />
       </div>
       <Button type="submit" disabled={saving}>
-        {saving ? "Adding…" : "Add to fridge"}
+        {saving ? "Adding…" : "Add to pantry"}
       </Button>
     </form>
   );

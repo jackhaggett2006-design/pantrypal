@@ -114,7 +114,7 @@ export async function generateRecipeIdeas(
       messages: [
         {
           role: "user",
-          content: `Here is what's currently in my fridge/pantry:\n${ingredientList}\n\nSuggest 3 different recipes I could cook using mainly these ingredients. You may assume basic staples are available even if not listed (salt, pepper, cooking oil, water). Prefer recipes that use as many of the listed ingredients as possible and minimize extra items I'd need to buy. For each recipe give a short appetizing title, a fitting emoji, a one-sentence description, servings, a full ingredient list with realistic quantities, clear step-by-step instructions (mark any step that involves a wait, like baking or simmering, with its duration in minutes), and your best estimate of the macros per serving.`,
+          content: `Here is what's currently in my pantry:\n${ingredientList}\n\nSuggest 3 different recipes I could cook using mainly these ingredients. You may assume basic staples are available even if not listed (salt, pepper, cooking oil, water). Prefer recipes that use as many of the listed ingredients as possible and minimize extra items I'd need to buy. For each recipe give a short appetizing title, a fitting emoji, a one-sentence description, servings, a full ingredient list with realistic quantities, clear step-by-step instructions (mark any step that involves a wait, like baking or simmering, with its duration in minutes), and your best estimate of the macros per serving.`,
         },
       ],
     },

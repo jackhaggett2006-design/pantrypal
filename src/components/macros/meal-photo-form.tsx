@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, ImageOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { analyzeMealPhoto, logMealEstimate } from "@/app/app/macros/actions";
 import { CameraCaptureSheet } from "@/components/fridge/camera-capture-sheet";
@@ -13,24 +13,26 @@ import type { MealEstimate } from "@/lib/vision";
 export function MealPhotoForm({ onDone }: { onDone: () => void }) {
   const [cameraOpen, setCameraOpen] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<MealEstimate | null>(null);
   const [saving, startSaving] = useTransition();
 
   async function handleCapture(file: File) {
     setCameraOpen(false);
     setAnalyzing(true);
+    setError(null);
     setEstimate(null);
     const fd = new FormData();
     fd.set("photo", file);
     try {
       const result = await analyzeMealPhoto(fd);
       if (!result.ok) {
-        toast.error(result.error);
+        setError(result.error);
         return;
       }
       setEstimate(result.estimate);
     } catch {
-      toast.error("Something went wrong reading that photo — try again.");
+      setError("Something went wrong reading that photo — try again.");
     } finally {
       setAnalyzing(false);
     }
@@ -54,6 +56,18 @@ export function MealPhotoForm({ onDone }: { onDone: () => void }) {
       <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-secondary/40 px-6 py-10 text-center">
         <Loader2 className="size-8 animate-spin text-primary" />
         <p className="text-sm text-muted-foreground">Sizing up your plate…</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-destructive/40 bg-destructive/5 px-6 py-10 text-center">
+        <ImageOff className="size-8 text-destructive" />
+        <p className="font-medium">{error}</p>
+        <Button variant="outline" onClick={() => setError(null)}>
+          Try again
+        </Button>
       </div>
     );
   }

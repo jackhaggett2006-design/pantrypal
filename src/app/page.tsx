@@ -68,7 +68,7 @@ export default async function Home() {
         <section className="grid grid-cols-1 items-center gap-10 py-14 sm:py-20 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <div className="flex flex-col items-start gap-6 text-left">
             <h1 className="font-heading text-4xl font-black tracking-tight text-balance sm:text-5xl">
-              Your fridge, but it knows what&apos;s in it.
+              Your pantry, but it knows what&apos;s in it.
             </h1>
             <p className="max-w-md text-lg text-muted-foreground text-pretty">
               Photograph your groceries once. PantryPal stocks the shelves,

@@ -48,7 +48,7 @@ export default async function AppLayout({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-[calc(env(safe-area-inset-bottom)+5rem)] pt-6">
         {children}
       </main>
 

@@ -118,67 +118,6 @@ export async function recognizeFoods(
   }
 }
 
-const foodTextSchema = {
-  type: "object",
-  properties: {
-    items: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          name: {
-            type: "string",
-            description:
-              "Concise, USDA-searchable food name, e.g. 'scrambled egg' or 'whole wheat toast' — not a whole meal name",
-          },
-          grams: {
-            type: "number",
-            description:
-              "Best-effort estimated weight in grams for the amount described (use typical serving sizes when no amount is given, e.g. one egg ≈ 50g)",
-          },
-        },
-        required: ["name", "grams"],
-        additionalProperties: false,
-      },
-    },
-  },
-  required: ["items"],
-  additionalProperties: false,
-} as const;
-
-export type ParsedFoodItem = { name: string; grams: number };
-
-/** Parses a freeform description of a meal ("2 eggs and toast with butter")
- * into distinct, USDA-searchable food items with an estimated gram weight
- * each — the text-input sibling of `recognizeFoods` above. */
-export async function parseFoodText(description: string): Promise<ParsedFoodItem[]> {
-  const response = await getClient().messages.create(
-    {
-      model: "claude-sonnet-5",
-      max_tokens: 1024,
-      thinking: { type: "disabled" },
-      output_config: { format: { type: "json_schema", schema: foodTextSchema } },
-      messages: [
-        {
-          role: "user",
-          content: `Break this food diary entry into distinct food items with an estimated weight in grams each: "${description}"`,
-        },
-      ],
-    },
-    { timeout: 20_000 },
-  );
-
-  const text = response.content.find((b) => b.type === "text");
-  if (!text || text.type !== "text") return [];
-
-  try {
-    const parsed = JSON.parse(text.text) as { items: ParsedFoodItem[] };
-    return (parsed.items ?? []).filter((it) => it.name && it.grams > 0);
-  } catch {
-    return [];
-  }
-}
-
 const mealPhotoSchema = {
   type: "object",
   properties: {

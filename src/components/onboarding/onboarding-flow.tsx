@@ -190,7 +190,7 @@ export function OnboardingFlow() {
               id="activity"
               value={activity}
               onChange={(e) => setActivity(e.target.value as ActivityLevel)}
-              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-sm"
+              className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-base shadow-sm md:text-sm"
             >
               {ACTIVITY_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const tabs = [
   { href: "/app", label: "Home", icon: Home },
-  { href: "/app/fridge", label: "Fridge", icon: Refrigerator },
+  { href: "/app/pantry", label: "Pantry", icon: Refrigerator },
   { href: "/app/macros", label: "Macros", icon: Target },
   { href: "/app/cookbook", label: "Cookbook", icon: ChefHat },
 ] as const;
@@ -23,7 +23,7 @@ export function AppNav() {
   return (
     <nav
       aria-label="Primary"
-      className="sticky bottom-0 z-40 border-t bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70"
+      className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70"
     >
       <ul className="mx-auto flex max-w-2xl items-stretch justify-around px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
         {tabs.map(({ href, label, icon: Icon }) => {

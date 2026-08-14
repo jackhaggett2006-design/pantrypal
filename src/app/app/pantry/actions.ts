@@ -108,7 +108,7 @@ export async function savePantryItems(
 
   const { error } = await supabase.from("pantry_items").insert(rows);
   if (error) throw new Error(error.message);
-  revalidatePath("/app/fridge");
+  revalidatePath("/app/pantry");
 }
 
 /** Add a single item by hand, enriching it with an icon and USDA macros. */
@@ -143,5 +143,60 @@ export async function deletePantryItem(id: string) {
   const { supabase } = await requireUser();
   const { error } = await supabase.from("pantry_items").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/app/fridge");
+  revalidatePath("/app/pantry");
+}
+
+/** Set a pantry item's quantity by hand — zero or below removes it, same as
+ * running out. */
+export async function updatePantryQuantity(id: string, quantity: number) {
+  const { supabase } = await requireUser();
+  if (quantity <= 0) {
+    const { error } = await supabase.from("pantry_items").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase
+      .from("pantry_items")
+      .update({ quantity })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+  }
+  revalidatePath("/app/pantry");
+}
+
+/** Best-effort: use up matching pantry items when a recipe is cooked. Loose
+ * name matching (same heuristic as the "have it all" ingredient check) and
+ * decremented by the recipe's stated ingredient amount scaled by servings —
+ * imprecise across mismatched units, but keeps the shelf roughly honest
+ * without asking the user to reconcile every cook by hand. Swallows its own
+ * errors: a pantry bookkeeping hiccup shouldn't block logging the meal. */
+export async function decrementPantryForRecipe(recipeId: string, servings: number) {
+  try {
+    const { supabase, user } = await requireUser();
+
+    const [{ data: ingredients }, { data: pantryItems }] = await Promise.all([
+      supabase.from("recipe_ingredients").select("name, quantity").eq("recipe_id", recipeId),
+      supabase.from("pantry_items").select("id, name, quantity").eq("user_id", user.id),
+    ]);
+    if (!ingredients || !pantryItems || pantryItems.length === 0) return;
+
+    for (const ing of ingredients) {
+      const ingName = ing.name.trim().toLowerCase();
+      const match = pantryItems.find((p) => {
+        const pName = p.name.trim().toLowerCase();
+        return pName.includes(ingName) || ingName.includes(pName);
+      });
+      if (!match || match.quantity == null) continue;
+
+      const remaining = match.quantity - (ing.quantity ?? 1) * servings;
+      if (remaining <= 0) {
+        await supabase.from("pantry_items").delete().eq("id", match.id);
+      } else {
+        await supabase.from("pantry_items").update({ quantity: remaining }).eq("id", match.id);
+      }
+    }
+
+    revalidatePath("/app/pantry");
+  } catch {
+    // Best-effort — the recipe log itself already succeeded.
+  }
 }
