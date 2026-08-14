@@ -15,6 +15,7 @@ export type DraftItem = {
   category: FoodCategory;
   fdc_id: number | null;
   macros_per_100g: Macros | null;
+  expires_at: string | null;
 };
 
 export type AnalyzeResult =
@@ -73,6 +74,7 @@ export async function analyzePhoto(formData: FormData): Promise<AnalyzeResult> {
           category: it.category,
           fdc_id: nutrition.fdcId,
           macros_per_100g: nutrition.macrosPer100g,
+          expires_at: null, // not inferred from photos; set manually if needed
         };
       }),
     );
@@ -100,6 +102,7 @@ export async function savePantryItems(
     category: it.category,
     fdc_id: it.fdc_id,
     macros_per_100g: it.macros_per_100g,
+    expires_at: it.expires_at,
     source,
   }));
 
@@ -115,6 +118,7 @@ export async function addManualItem(formData: FormData) {
     "other") as FoodCategory;
   const quantity = Number(formData.get("quantity") ?? 1) || 1;
   const unit = String(formData.get("unit") ?? "unit").trim() || "unit";
+  const expiresAt = String(formData.get("expires_at") ?? "").trim() || null;
   if (!name) return;
 
   const nutrition = await lookupNutrition(name);
@@ -128,6 +132,7 @@ export async function addManualItem(formData: FormData) {
         category,
         fdc_id: nutrition.fdcId,
         macros_per_100g: nutrition.macrosPer100g,
+        expires_at: expiresAt,
       },
     ],
     "manual",

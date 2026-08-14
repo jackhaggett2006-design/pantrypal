@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChefHat, Sparkles, UserRound, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { LogRecipeButton } from "@/components/cookbook/log-recipe-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,14 +63,17 @@ export default async function RecipeDetailPage({
       </div>
 
       {macros && (
-        <Card>
-          <CardContent className="grid grid-cols-4 gap-3 py-4 text-center">
-            <Stat label="kcal" value={Math.round(macros.calories)} />
-            <Stat label="Protein" value={`${macros.protein_g}g`} />
-            <Stat label="Carbs" value={`${macros.carbs_g}g`} />
-            <Stat label="Fat" value={`${macros.fat_g}g`} />
-          </CardContent>
-        </Card>
+        <>
+          <Card>
+            <CardContent className="grid grid-cols-4 gap-3 py-4 text-center">
+              <Stat label="kcal" value={Math.round(macros.calories)} />
+              <Stat label="Protein" value={`${macros.protein_g}g`} />
+              <Stat label="Carbs" value={`${macros.carbs_g}g`} />
+              <Stat label="Fat" value={`${macros.fat_g}g`} />
+            </CardContent>
+          </Card>
+          <LogRecipeButton recipeId={recipe.id} />
+        </>
       )}
 
       <Card>

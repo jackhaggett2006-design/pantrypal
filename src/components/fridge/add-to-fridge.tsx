@@ -240,6 +240,10 @@ function ManualForm({ onDone }: { onDone: () => void }) {
           ))}
         </select>
       </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="expires_at">Expires (optional)</Label>
+        <Input id="expires_at" name="expires_at" type="date" />
+      </div>
       <Button type="submit" disabled={saving}>
         {saving ? "Adding…" : "Add to fridge"}
       </Button>

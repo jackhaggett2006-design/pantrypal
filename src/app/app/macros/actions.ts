@@ -45,7 +45,7 @@ async function insertIntake(
   quantity: number,
   unit: string,
   macros: Macros,
-  source: "pantry" | "manual",
+  source: "pantry" | "manual" | "recipe",
 ) {
   const supabase = await createClient();
   const { error } = await supabase.from("intake_log").insert({
@@ -110,6 +110,35 @@ export async function logManual(formData: FormData) {
   };
 
   await insertIntake(user.id, name, grams, "g", scaleMacros(per100g, grams), "manual");
+}
+
+/** Log N servings of a recipe (its per-serving macro estimate x servings). */
+export async function logRecipe(formData: FormData) {
+  const { supabase, user } = await requireUser();
+  const recipeId = String(formData.get("recipeId") ?? "");
+  const servings = Number(formData.get("servings") ?? 1) || 1;
+  if (!recipeId) return;
+
+  const { data: recipe, error } = await supabase
+    .from("recipes")
+    .select("title, macros")
+    .eq("id", recipeId)
+    .single();
+  if (error || !recipe) throw new Error("Couldn't find that recipe.");
+
+  const perServing = recipe.macros as Macros | null;
+  if (!perServing) {
+    throw new Error("This recipe doesn't have macro estimates yet.");
+  }
+
+  const totals: Macros = {
+    calories: Math.round(perServing.calories * servings),
+    protein_g: Math.round(perServing.protein_g * servings * 10) / 10,
+    carbs_g: Math.round(perServing.carbs_g * servings * 10) / 10,
+    fat_g: Math.round(perServing.fat_g * servings * 10) / 10,
+  };
+
+  await insertIntake(user.id, recipe.title, servings, " serving(s)", totals, "recipe");
 }
 
 export async function deleteIntakeEntry(id: string) {

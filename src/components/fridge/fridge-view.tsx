@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import { deletePantryItem } from "@/app/app/fridge/actions";
+import { expiryLabel, getExpiryStatus } from "@/lib/expiry";
 import type { PantryItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -64,6 +65,10 @@ function FridgeItem({ item }: { item: PantryItem }) {
     });
   }
 
+  const expiryStatus = getExpiryStatus(item.expires_at);
+  const label = item.expires_at ? expiryLabel(item.expires_at) : null;
+  const title = label ? `${item.name} — ${label}` : item.name;
+
   return (
     <motion.div
       layout
@@ -75,7 +80,7 @@ function FridgeItem({ item }: { item: PantryItem }) {
       onHoverEnd={() => setHovered(false)}
       onTapStart={() => setHovered((h) => !h)}
       className="group relative flex w-16 flex-col items-center gap-1 rounded-xl bg-card p-2 text-center shadow-sm"
-      title={item.name}
+      title={title}
     >
       <button
         type="button"
@@ -94,6 +99,19 @@ function FridgeItem({ item }: { item: PantryItem }) {
       <span className="line-clamp-2 text-[11px] font-medium leading-tight text-foreground">
         {item.name}
       </span>
+      {expiryStatus && label && (
+        <span
+          className="text-[9px] font-semibold leading-none"
+          style={{
+            color:
+              expiryStatus === "expired"
+                ? "var(--destructive)"
+                : "var(--status-warning)",
+          }}
+        >
+          {label}
+        </span>
+      )}
     </motion.div>
   );
 }
